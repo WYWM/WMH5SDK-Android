@@ -186,11 +186,11 @@ readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFun
 
 第三方app带sdk auth启动sdk的时序图如下： 
 
-![image](/Demo/H5SDKDemo/images/loginSD.png)
+![image](/Demo/H5SDKDemo/image/loginSD.png)
 
 第三方app不带sdk auth启动sdk的时序图如下： 
 
-![image](/Demo/H5SDKDemo/images/anonymousSD.png)
+![image](/Demo/H5SDKDemo/image/anonymousSD.png)
 
 ## 5.拦截url的处理方法
 
