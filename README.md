@@ -194,4 +194,22 @@ readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFun
 
 ## 5.拦截url的处理方法
 
-​可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。 
+可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。 
+
+# 6.FAQ
+
+#### Q:为什么在阅读H5充值页面点击微信支付的选项无法调起微信支付？
+
+A:请检查下代码中有没有调用WebView的pauseTimers方法，调用这个方法不仅仅会针对当前的WebView，也会对全应用的WebView起效，如果调用了这个方法就会出现问题中描述的现象。
+
+
+
+#### Q:如果app在接入SDK的时候发现有问题，我们可以如何排查问题？ 
+
+A:可以使用如下步骤：
+
+第一步：在不同的设备上运行程序，确定该问题是否和个别设备相关还是和设备无关。
+
+第二步：在有问题的设备上运行Demo，确保Demo运行是正常的，如果Demo有问题，请直接联系我们。
+
+第三步：如果Demo正常，将你们的app_channel和sdk_auth替换Demo中Constants类中相应的常量，再运行Demo看看有没有问题，如果有问题，问题可能是app_channel或sdk_auth的值不正确。如果没有问题，把Demo代码放到你们的app中运行看看有没有问题。如果在app中运行没有问题，问题可能是你们的接入调用的方法和Demo中有不同的地方。如果在app中运行有问题，问题可能和app本身的一些情况有关，可以联系我们一起排查。
