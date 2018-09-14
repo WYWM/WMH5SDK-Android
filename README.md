@@ -196,7 +196,7 @@ readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFun
 
 可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。 
 
-# 6.FAQ
+## 6.FAQ
 
 ### Q:为什么在阅读H5充值页面点击微信支付的选项无法调起微信支付？
 
