@@ -198,13 +198,13 @@ readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFun
 
 # 6.FAQ
 
-#### Q:为什么在阅读H5充值页面点击微信支付的选项无法调起微信支付？
+### Q:为什么在阅读H5充值页面点击微信支付的选项无法调起微信支付？
 
 A:请检查下代码中有没有调用WebView的pauseTimers方法，调用这个方法不仅仅会针对当前的WebView，也会对全应用的WebView起效，如果调用了这个方法就会出现问题中描述的现象。
 
 
 
-#### Q:如果app在接入SDK的时候发现有问题，我们可以如何排查问题？ 
+### Q:如果app在接入SDK的时候发现有问题，我们可以如何排查问题？ 
 
 A:可以使用如下步骤：
 
