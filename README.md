@@ -12,11 +12,13 @@
 
 4.支持添加客户端跟H5之间的自定义接口调用和回调，以支持合作方某些自定义的扩展需求。
 
-合作方通常只需要一个开发人员使用半天时间就能接入这个SDK。 
+合作方通常只需要一个开发人员使用半天时间就能接入这个SDK。
+
+SDK和Demo的github地址：https://github.com/WYWM/WMH5SDK-Android
 
 ## 2.使用方法
 
-(1)导入SDK的aar包。在libs下加入WMH5SDK-1.0.0.aar文件，并且修改build.gralde文件，加入如下的配置。 
+(1)导入SDK的aar包。在libs下加入WMH5SDK-1.0.1.aar文件，并且修改build.gralde文件，加入如下的配置。 
 
 ```groovy
 repositories {
@@ -26,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compile(name:'WMH5SDK-1.0.0',ext:'aar')
+    compile(name:'WMH5SDK-1.0.1',ext:'aar')
 }
 ```
 
@@ -61,7 +63,7 @@ public void startLoad(String url, String appChannel, String sdkAuth)
 
 该方法用于打开网站。
 
-参数说明：
+#### 参数说明
 
 | 参数名     | 参数类型 | 是否可为空 | 说明                                                   |
 | ---------- | -------- | ---------- | ------------------------------------------------------ |
@@ -69,13 +71,25 @@ public void startLoad(String url, String appChannel, String sdkAuth)
 | appChannel | String   | 否         | 合作方在文漫侧的唯一标识，由文漫提供                   |
 | sdkAuth    | String   | 是         | 用户签名信息，从应用服务器获取。传空表示匿名进入页面。 |
 
-调用示例：
+#### 调用示例
+
+有帐号体系的app调用方式:
 
 ```java
 if (isAnonymous) {
     mReadWebView.startLoad(url, mAppChannel, null);
 } else {
     mReadWebView.startLoad(url, mAppChannel, mSDKAuth);
+}
+```
+
+无帐号体系的app调用方式：
+
+```java
+if (NoAccountSystemStorage.sSDKAuth == null) {
+    mReadWebView.startLoad(url, appChannel, null);
+} else {
+    mReadWebView.startLoad(url, appChannel, NoAccountSystemStorage.sSDKAuth);
 }
 ```
 
@@ -97,11 +111,17 @@ IReadWapCallback的定义如下：
 public interface IReadWapCallback {
 
     /**
-     * 登录
+     * 登录，有帐号体系的app需实现该方法
      * @param setSDKAuthListener 用于设置sdkAuth的接口
      */
     void doLogin(ISetSDKAuthListener setSDKAuthListener);
-    
+
+    /**
+     * 保存SDKAuth,用于下次打开时使用，无帐号体系的app需实现该方法
+     * @param SDKAuth 无帐号体系时可使用的SDKAuth
+     */
+    void saveSDKAuth(String SDKAuth);
+
 }
 ```
 
@@ -111,8 +131,15 @@ public interface IReadWapCallback {
 private IReadWapCallback mReadWapCallback = new IReadWapCallback() {
     @Override
     public void doLogin(ISetSDKAuthListener setSDKAuthListener) {
+        // 有帐号体系的app需实现该方法，另一个方法可忽略
         mISetSDKAuthListener = setSDKAuthListener;
         LoginActivity.startLoginActivityForResult(ReadWapActivity.this, 																	LoginActivity.REQUEST_CODE);
+    }
+    
+    @Override
+    public void saveSDKAuth(String SDKAuth) {
+        // 无帐号体系的app需实现该方法，另一个方法可忽略
+        NoAccountSystemStorage.sSDKAuth = SDKAuth;
     }
 };
 ```
@@ -184,17 +211,25 @@ readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFun
 
 ## 4.**调用流程时序图** 
 
-第三方app带sdk auth启动sdk的时序图如下： 
+有帐号体系的第三方app带sdk auth启动sdk的时序图如下： 
 
 ![image](/Demo/H5SDKDemo/image/loginSD.png)
 
-第三方app不带sdk auth启动sdk的时序图如下： 
+有帐号体系的第三方app不带sdk auth启动sdk的时序图如下： 
 
 ![image](/Demo/H5SDKDemo/image/anonymousSD.png)
 
+无帐号体系的第三方app不带sdk auth启动sdk的时序图如下： 
+
+![image](/Demo/H5SDKDemo/image/noAccountAndNoSDKAuthSD.png)
+
+无帐号体系的第三方app带sdk auth启动sdk的时序图如下：
+
+![image](/Demo/H5SDKDemo/image/noAccountAndHaveSDKAuthSDK.png)
+
 ## 5.拦截url的处理方法
 
-可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。 
+​可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。 
 
 ## 6.FAQ
 

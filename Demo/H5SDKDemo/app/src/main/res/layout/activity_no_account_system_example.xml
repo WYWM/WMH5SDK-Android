@@ -5,19 +5,14 @@
     android:orientation="vertical"
     android:paddingHorizontal="8dp">
 
-    <TextView android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="应用是否有帐号体系？"/>
-
-    <Button android:id="@+id/btn_have_account_system"
+    <Button android:id="@+id/btn_open_yd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="有帐号体系"/>
+        android:text="打开阅读H5"/>
 
-    <Button android:id="@+id/btn_no_account_system"
+    <TextView android:id="@+id/tv_account_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="无帐号体系"/>
+        android:text="帐号状态:未登录"/>
 
 </LinearLayout>

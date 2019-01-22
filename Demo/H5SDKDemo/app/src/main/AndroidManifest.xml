@@ -17,10 +17,19 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ReadWapActivity">
+        <activity android:name=".LoginActivity">
         </activity>
 
-        <activity android:name=".LoginActivity">
+        <activity android:name=".HaveAccountSystemExampleActivity">
+        </activity>
+
+        <activity android:name=".HaveAccountSystemReadWapActivity">
+        </activity>
+
+        <activity android:name=".NoAccountSystemExampleActivity">
+        </activity>
+
+        <activity android:name=".NoAccountSystemReadWapActivity">
         </activity>
 
     </application>
