@@ -1,4 +1,4 @@
-# **文漫H5 android SDK使用说明** 
+# **文漫H5 android SDK使用说明**
 
 ## 1.概述
 
@@ -18,7 +18,7 @@ SDK和Demo的github地址：https://github.com/WYWM/WMH5SDK-Android
 
 ## 2.使用方法
 
-(1)导入SDK的aar包。在libs下加入WMH5SDK-1.0.1.aar文件，并且修改build.gralde文件，加入如下的配置。 
+(1)导入SDK的aar包。在libs下加入WMH5SDK-1.0.2.aar文件，并且修改build.gralde文件，加入如下的配置。
 
 ```groovy
 repositories {
@@ -28,23 +28,25 @@ repositories {
 }
 
 dependencies {
-    compile(name:'WMH5SDK-1.0.1',ext:'aar')
+    compile(name:'WMH5SDK-1.0.2',ext:'aar')
 }
 ```
 
-(2)在混淆配置中加入 
+(2)在混淆配置中加入
 
 ```
 -dontwarn com.netease.jsbridge.**
 ```
 
-(3)将ReadWebView添加到提供H5网站打开功能的Activity中，可以在xml布局中添加，也可以通过Java代码添加。在Activity的onCreate方法中获取到ReadWebView对象后，如以下示例代码(示例代码均来自Demo工程，下同)调用： 
+(3)将ReadWebView添加到提供H5网站打开功能的Activity中，可以在xml布局中添加，也可以通过Java代码添加。在Activity的onCreate方法中获取到ReadWebView对象后，如以下示例代码(示例代码均来自Demo工程，下同)调用：
 
 ```java
 // 设置IReadWapCallback
 mReadWebView.setReadWapCallback(mReadWapCallback);
 // 注册本地接口
 mReadWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFunctionCallback);
+// 设置白天或夜间模式
+mReadWebView.setTheme(false);
 // 开始加载
 if (isAnonymous) {
     mReadWebView.startLoad(url, mAppChannel, null);
@@ -55,7 +57,7 @@ if (isAnonymous) {
 
 ## 3.接口说明
 
-ReadWebView提供了3个方法可以调用。 
+ReadWebView提供了4个方法可以调用。
 
 ### (1)startLoad
 
@@ -95,9 +97,9 @@ if (NoAccountSystemStorage.sSDKAuth == null) {
 
 ### (2)setReadWapCallback
 
-public void setReadWapCallback(IReadWapCallback readWapCallback) 
+public void setReadWapCallback(IReadWapCallback readWapCallback)
 
-该方法用于设置IReadWapCallback接口实现类的实例对象。IReadWapCallback中有1个方法需要实现。doLogin方法用于ReadWebView回调发起登录来获取sdk auth,通过调用参数ISetSDKAuthListener的setSDKAuth(String sdkAuth)返回sdkAuth。
+该方法用于设置IReadWapCallback接口实现类的实例对象。IReadWapCallback中的方法可以根据需要实现。
 
 参数说明：
 
@@ -105,23 +107,46 @@ public void setReadWapCallback(IReadWapCallback readWapCallback)
 | --------------- | ---------------- | ---------- | -------- |
 | readWapCallback | IReadWapCallback | 否         | 回调接口 |
 
-IReadWapCallback的定义如下： 
+IReadWapCallback的定义如下：
 
 ```java
 public interface IReadWapCallback {
 
     /**
-     * 登录，有帐号体系的app需实现该方法
+     * 登录，有帐号体系的接入方需实现该方法
      * @param setSDKAuthListener 用于设置sdkAuth的接口
+     * @param from 登录来源
      */
-    void doLogin(ISetSDKAuthListener setSDKAuthListener);
+    void doLogin(ISetSDKAuthListener setSDKAuthListener, String from);
 
     /**
-     * 保存SDKAuth,用于下次打开时使用，无帐号体系的app需实现该方法
+     * 保存SDKAuth，用于下次打开时使用，无帐号体系的接入方需实现该方法
      * @param SDKAuth 无帐号体系时可使用的SDKAuth
      */
     void saveSDKAuth(String SDKAuth);
 
+    /**
+     * 支付，希望使用应用自己支付方式的app需要实现该方法，完成支付后使用IPayResultListener通知支付结果。如果不用自己支付方式不用实现该方法。
+     * @param transactionId 订单号
+     * @param amount 金额
+     * @param payment 支付方式，0表示支付宝，1表示微信
+     * @param payResultListener 支付结果回调接口
+     */
+    void doPay(String transactionId, int amount, int payment, IPayResultListener payResultListener);
+
+    /**
+     * 通知主题切换，如果无此需求不用实现该方法
+     * @param isNightMode 是否切换成夜间模式
+     */
+    void notifyThemeChanged(boolean isNightMode);
+
+    /**
+     * 通知当前打开书籍的阅读进度
+     * @param bookId 书籍id
+     * @param bookName 书籍名称
+     * @param progress 阅读进度
+     */
+    void notifyCurrentBookProgress(String bookId, String bookName, double progress);
 }
 ```
 
@@ -129,18 +154,33 @@ public interface IReadWapCallback {
 
 ```java
 private IReadWapCallback mReadWapCallback = new IReadWapCallback() {
-    @Override
-    public void doLogin(ISetSDKAuthListener setSDKAuthListener) {
-        // 有帐号体系的app需实现该方法，另一个方法可忽略
-        mISetSDKAuthListener = setSDKAuthListener;
-        LoginActivity.startLoginActivityForResult(ReadWapActivity.this, 																	LoginActivity.REQUEST_CODE);
-    }
     
     @Override
-    public void saveSDKAuth(String SDKAuth) {
-        // 无帐号体系的app需实现该方法，另一个方法可忽略
-        NoAccountSystemStorage.sSDKAuth = SDKAuth;
-    }
+        public void doLogin(ISetSDKAuthListener setSDKAuthListener, String from) {
+            mISetSDKAuthListener = setSDKAuthListener;
+          LoginActivity.startLoginActivityForResult(HaveAccountSystemReadWapActivity.this, LoginActivity.REQUEST_CODE);
+        }
+
+        @Override
+        public void saveSDKAuth(String SDKAuth) {
+            NoAccountSystemStorage.sSDKAuth = SDKAuth;
+        }
+
+        @Override
+        public void doPay(String transactionId, int amount, int payment, IPayResultListener payResultListener) {
+            mIPayResultListener = payResultListener;
+            pay(transactionId, amount, payment);
+        }
+
+        @Override
+        public void notifyThemeChanged(boolean isNightMode) {
+            changeTheme(isNightMode);
+        }
+
+        @Override
+        public void notifyCurrentBookProgress(String bookId, String bookName, double progress) {
+            setBookProgress(bookId, bookName, progress);
+        }
 };
 ```
 
@@ -150,14 +190,42 @@ readWebView.setReadWapCallback(mReadWapCallback);
 ```
 
 ```java
+// 设置SDKAuth
 if (mISetSDKAuthListener != null) {
     mISetSDKAuthListener.setSDKAuth(Account.sSDKAuth);
 }
 ```
 
-### (3)registerNativeFunction 
+```java
+// 通知支付结果
+if (mIPayResultListener != null) {
+    // true表示支付成功，false表示支付失败
+    mIPayResultListener.onPayResult(true, transactionId);
+}
+```
 
-public void registerNativeFunction(String functionName, IRegisterNativeFunctionCallback registerNativeFunctionCallback) 
+### (3)setTheme
+
+public void setTheme(boolean isNightMode)
+
+该方法用于设置H5的主题是白天模式或夜间模式。
+
+参数说明：
+
+| 参数名      | 参数类型 | 是否可为空 | 说明         |
+| ----------- | -------- | ---------- | ------------ |
+| isNightMode | Boolean  | 否         | 是否夜间模式 |
+
+调用实例：
+
+```java
+// 设置白天或夜间模式
+mReadWebView.setTheme(false);
+```
+
+### (4)registerNativeFunction
+
+public void registerNativeFunction(String functionName, IRegisterNativeFunctionCallback registerNativeFunctionCallback)
 
 该方法用于注册本地方法，供JS调用。第三方如果有特殊定制的页面功能需求，可使用该方法。JS调用后ReadWebView会回调IRegisterNativeFunctionCallback的onHandle方法，通过调用参数IHandlerCallback的onCallback(String result)返回本地方法调用后的返回值。
 
@@ -209,17 +277,17 @@ private String handle(String handlerName, String value) {
 readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFunctionCallback);
 ```
 
-## 4.**调用流程时序图** 
+## 4.**调用流程时序图**
 
-有帐号体系的第三方app带sdk auth启动sdk的时序图如下： 
+有帐号体系的第三方app带sdk auth启动sdk的时序图如下：
 
 ![image](/Demo/H5SDKDemo/image/loginSD.png)
 
-有帐号体系的第三方app不带sdk auth启动sdk的时序图如下： 
+有帐号体系的第三方app不带sdk auth启动sdk的时序图如下：
 
 ![image](/Demo/H5SDKDemo/image/anonymousSD.png)
 
-无帐号体系的第三方app不带sdk auth启动sdk的时序图如下： 
+无帐号体系的第三方app不带sdk auth启动sdk的时序图如下：
 
 ![image](/Demo/H5SDKDemo/image/noAccountAndNoSDKAuthSD.png)
 
@@ -229,7 +297,9 @@ readWebView.registerNativeFunction(Constants.NATIVE_FUNCTION, mRegisterNativeFun
 
 ## 5.拦截url的处理方法
 
-​可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。 
+可以覆写ReadWebView中定义的shouldOverrideUrlLoading(WebView view, String url)方法来处理url。这里需要注意的是，对于微信和支付宝的支付跳转在ReadWebView中已经处理，如果覆写shouldOverrideUrlLoading方法返回true，将不会处理微信和支付宝的支付跳转。
+
+可以覆写ReadWebView中定义的onPageFinished(WebView view, String url)方法和onReceivedError(WebView view, int errorCode, String description, String failingUrl)方法进行特定需求的处理。
 
 ## 6.FAQ
 
@@ -239,7 +309,7 @@ A:请检查下代码中有没有调用WebView的pauseTimers方法，调用这个
 
 
 
-### Q:如果app在接入SDK的时候发现有问题，我们可以如何排查问题？ 
+### Q:如果app在接入SDK的时候发现有问题，我们可以如何排查问题？
 
 A:可以使用如下步骤：
 

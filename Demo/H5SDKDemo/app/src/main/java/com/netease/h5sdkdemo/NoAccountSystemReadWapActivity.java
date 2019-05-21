@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.netease.readwap.IHandlerCallback;
+import com.netease.readwap.IPayResultListener;
 import com.netease.readwap.IReadWapCallback;
 import com.netease.readwap.IRegisterNativeFunctionCallback;
 import com.netease.readwap.ISetSDKAuthListener;
@@ -58,7 +59,7 @@ public class NoAccountSystemReadWapActivity extends AppCompatActivity {
 
     private IReadWapCallback mReadWapCallback = new IReadWapCallback() {
         @Override
-        public void doLogin(ISetSDKAuthListener setSDKAuthListener) {
+        public void doLogin(ISetSDKAuthListener setSDKAuthListener, String from) {
             // 无帐号体系的app不用实现该方法
         }
 
@@ -67,6 +68,22 @@ public class NoAccountSystemReadWapActivity extends AppCompatActivity {
             // 保存SDKAuth
             NoAccountSystemStorage.sSDKAuth = SDKAuth;
         }
+
+        @Override
+        public void doPay(String transactionId, int amount, int payment, IPayResultListener payResultListener) {
+            // 支付，希望使用应用自己支付方式的app需要实现该方法，完成支付后使用IPayResultListener通知支付结果。如果不用自己支付方式不用实现该方法。
+        }
+
+        @Override
+        public void notifyThemeChanged(boolean isNightMode) {
+            // 通知主题切换，如果无此需求不用实现该方法
+        }
+
+        @Override
+        public void notifyCurrentBookProgress(String bookId, String bookName, double progress) {
+            // 通知当前打开书籍的阅读进度
+        }
+
     };
 
     private IRegisterNativeFunctionCallback mRegisterNativeFunctionCallback = new IRegisterNativeFunctionCallback() {
